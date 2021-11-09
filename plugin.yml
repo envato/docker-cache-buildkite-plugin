@@ -1,0 +1,29 @@
+name: Docker Cache
+description: Build a multi-stage compatible cache image and store it in S3
+author: https://github.com/envato
+requirements:
+  - docker (18.09 or higher)
+  - docker-compose
+  - aws
+configuration:
+  properties:
+    s3_bucket:
+      type: string
+    s3_key:
+      type: string
+    metadata_key:
+      type: string
+    service:
+      type: string
+    config:
+      type: string
+    cache_from:
+      type: string
+    image_repository:
+      type: string
+    image_name:
+      type: string
+  required:
+    - s3_bucket
+    - s3_key
+    - metadata_key

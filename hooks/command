@@ -1,0 +1,95 @@
+#!/bin/bash
+set -ueo pipefail
+
+function plugin_read_config() {
+  local var="BUILDKITE_PLUGIN_DOCKER_CACHE_${1}"
+  local default="${2:-}"
+  echo "${!var:-$default}"
+}
+
+function plugin_check_metadata_exists() {
+  buildkite-agent meta-data exists "$1" || echo -n "false"
+}
+
+function plugin_get_metadata() {
+  plugin_prompt buildkite-agent meta-data get "$1"
+  buildkite-agent meta-data get "$1"
+}
+
+function pull_image() {
+  key=""
+  key_exists=$(plugin_check_metadata_exists "$metadata_key")
+  if [[ $key_exists == "false" ]]; then
+    key=$cache_from
+  else
+    key=plugin_get_metadata $metadata_key
+  fi
+  aws s3 cp --quiet "s3://${s3_bucket}/${key}" "$remote_cache" || true
+  if [[ ! -f $remote_cache ]]; then
+    echo "Warning: Cache file not found, continuing without it"
+  else
+    pushd "$local_cache_dir"
+    tar -xzf "$remote_cache" -C "$remote_cache_dir"
+    popd
+  fi
+}
+
+function build_image() {
+  builder_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
+  cmd="docker --debug buildx bake -f $config --progress plain --builder $builder_name --set=${service}.cache-to=type=local,dest=${local_cache_dir},mode=max"
+  if [[ -e $remote_cache ]]; then
+    cmd="${cmd} --set=*.cache-from=type=local,src=${remote_cache_dir}"
+  fi
+
+  if [[ -n $image_repository ]]; then
+    cmd="${cmd} --set=*.output=type=registry,ref=${image_repository}:${image_name}"
+  fi
+
+  cmd="${cmd} ${service}"
+
+  docker buildx create --driver docker-container --name "$builder_name"
+
+  eval "$cmd"
+  docker buildx rm "$builder_name"
+  pushd $local_cache_dir
+  tar -czf "${local_cache}" ./
+  popd
+}
+
+function push_image_s3() {
+  aws s3 cp --quiet "$local_cache" "s3://${s3_bucket}/${s3_key}"
+}
+
+s3_bucket="$(plugin_read_config S3_BUCKET)"
+s3_key="$(plugin_read_config S3_KEY)"
+metadata_key="$(plugin_read_config METADATA_KEY)"
+
+service="$(plugin_read_config SERVICE)"
+config="$(plugin_read_config CONFIG)"
+if [[ -z $config ]]; then
+  config="docker-compose.yml"
+fi
+cache_from="$(plugin_read_config CACHE_FROM)"
+if [[ -z $cache_from ]]; then
+  cache_from="${BUILDKITE_PIPELINE_SLUG}/latest"
+fi
+image_repository="$(plugin_read_config IMAGE_REPOSITORY)"
+image_name="$(plugin_read_config IMAGE_NAME)"
+if [[ -z $image_name ]]; then
+  image_name="${BUILDKITE_COMMIT}"
+fi
+
+cache_dir="$(mktemp -d)"
+local_cache="${cache_dir}/local_cache.tar.gz"
+local_cache_dir="${cache_dir}/local"
+remote_cache_dir="${cache_dir}/remote"
+mkdir -p "$local_cache_dir"
+mkdir -p "$remote_cache_dir"
+remote_cache="${cache_dir}/remote_cache.tar.gz"
+pull_image
+if [[ -n $service ]]; then
+  build_image
+else
+  cp "$remote_cache" "$local_cache"
+fi
+push_image_s3
