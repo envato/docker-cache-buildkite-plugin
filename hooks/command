@@ -36,13 +36,17 @@ function pull_image() {
 
 function build_image() {
   builder_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
-  cmd="docker --debug buildx bake -f $config --progress plain --builder $builder_name --set=${service}.cache-to=type=local,dest=${local_cache_dir},mode=max"
+  cmd="docker --debug buildx bake -f $config --progress plain \
+  --builder $builder_name \
+  --set=${service}.cache-to=type=local,dest=${local_cache_dir},mode=max"
+
   if [[ -e $remote_cache ]]; then
     cmd="${cmd} --set=*.cache-from=type=local,src=${remote_cache_dir}"
   fi
 
   if [[ -n $image_repository ]]; then
-    cmd="${cmd} --set=*.output=type=registry,ref=${image_repository}:${image_name}"
+    cmd="${cmd} --set=*.output=type=registry,ref=${image_repository} \
+    --set=*.tags=${image_repository}:${image_name}"
   fi
 
   cmd="${cmd} ${service}"
