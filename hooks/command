@@ -55,7 +55,7 @@ function build_image() {
 
   eval "$cmd"
   docker buildx rm "$builder_name"
-  pushd $local_cache_dir
+  pushd "$local_cache_dir"
   tar -czf "${local_cache}" ./
   popd
 }
