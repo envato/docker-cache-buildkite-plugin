@@ -35,7 +35,7 @@ function pull_image() {
 
 function build_image() {
   builder_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
-  cmd="docker --debug buildx bake -f $config --progress plain \
+  cmd="docker buildx bake -f $config --progress plain \
   --builder $builder_name \
   --set=${service}.cache-to=type=local,dest=${local_cache_dir},mode=max"
 

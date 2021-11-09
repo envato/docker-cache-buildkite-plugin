@@ -35,7 +35,7 @@ Setting the metadata key to something compatible with the [Docker Compose Plugin
     env:
       DOCKER_BUILDKIT: 1
       BUILDKIT_PROGRESS: plain
-    plulgins:
+    plugins:
       - ecr#v1.2.0:
           region: us-east-1
           account-ids: 012345678910
