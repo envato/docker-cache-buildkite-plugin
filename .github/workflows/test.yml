@@ -10,6 +10,7 @@ jobs:
         - "./:/plugin"
     steps:
       - name: plugin tester
+        run: bats tests/
   shellcheck:
     name: Shellcheck
     runs-on: ubuntu-latest
