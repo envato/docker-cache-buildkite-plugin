@@ -12,7 +12,6 @@ function plugin_check_metadata_exists() {
 }
 
 function plugin_get_metadata() {
-  plugin_prompt buildkite-agent meta-data get "$1"
   buildkite-agent meta-data get "$1"
 }
 
@@ -47,6 +46,7 @@ function build_image() {
   if [[ -n $image_repository ]]; then
     cmd="${cmd} --set=*.output=type=registry,ref=${image_repository} \
     --set=*.tags=${image_repository}:${image_name}"
+    buildkite-agent meta-data set "$metadata_key" "${image_repository}:${image_name}"
   fi
 
   cmd="${cmd} ${service}"
