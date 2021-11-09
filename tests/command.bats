@@ -14,7 +14,7 @@ load '/usr/local/lib/bats/load.bash'
   export BUILDKITE_PLUGIN_DOCKER_CACHE_S3_KEY=example-key
   export BUILDKITE_PLUGIN_DOCKER_CACHE_SERVICE=service
   export BUILDKITE_PIPELINE_SLUG="slug"
-  export BUILDKITE_BUILD_NUMBER="1"
+  export BUILDKITE_JOB_ID="1"
   export temp_dir="$(mktemp -d)"
   export BUILDKITE_COMMIT="abcdef"
   touch ${temp_dir}/remote_cache.tar.gz
@@ -55,7 +55,7 @@ load '/usr/local/lib/bats/load.bash'
   export BUILDKITE_PLUGIN_DOCKER_CACHE_S3_BUCKET=example-bucket
   export BUILDKITE_PLUGIN_DOCKER_CACHE_S3_KEY=example-key
   export BUILDKITE_PIPELINE_SLUG="slug"
-  export BUILDKITE_BUILD_NUMBER="1"
+  export BUILDKITE_JOB_ID="1"
   export temp_dir="$(mktemp -d)"
   export BUILDKITE_COMMIT="abcdef"
   touch ${temp_dir}/remote_cache.tar.gz
