@@ -72,6 +72,6 @@ load '/usr/local/lib/bats/load.bash'
   stub tar \
     "-xzf ${temp_dir}/remote_cache.tar.gz -C ${temp_dir}/remote : echo"
 
-  stub cp \
+  stub mv \
     "${temp_dir}/remote_cache.tar.gz ${temp_dir}/local_cache.tar.gz : echo"
 }

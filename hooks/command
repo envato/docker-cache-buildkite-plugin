@@ -94,6 +94,6 @@ pull_image
 if [[ -n $service ]]; then
   build_image
 else
-  cp "$remote_cache" "$local_cache"
+  mv "$remote_cache" "$local_cache"
 fi
 push_image_s3
