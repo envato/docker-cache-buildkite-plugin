@@ -21,7 +21,7 @@ function pull_image() {
   if [[ $key_exists == "false" ]]; then
     key=$cache_from
   else
-    key=$(plugin_get_metadata "$metadata_key")
+    key=$(plugin_get_metadata "${metadata_key}-s3")
   fi
   aws s3 cp --quiet "s3://${s3_bucket}/${key}" "$remote_cache" || true
   if [[ ! -f $remote_cache ]]; then
@@ -47,6 +47,7 @@ function build_image() {
     cmd="${cmd} --set=*.output=type=registry,ref=${image_repository} \
     --set=*.tags=${image_repository}:${image_name}"
     buildkite-agent meta-data set "$metadata_key" "${image_repository}:${image_name}"
+    buildkite-agent meta-data set "${metadata_key}-s3" "$s3_key"
   fi
 
   cmd="${cmd} ${service}"
