@@ -21,7 +21,7 @@ function pull_image() {
   if [[ $key_exists == "false" ]]; then
     key=$cache_from
   else
-    key=plugin_get_metadata $metadata_key
+    key=$(plugin_get_metadata "$metadata_key")
   fi
   aws s3 cp --quiet "s3://${s3_bucket}/${key}" "$remote_cache" || true
   if [[ ! -f $remote_cache ]]; then
