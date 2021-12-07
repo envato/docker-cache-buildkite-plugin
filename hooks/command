@@ -36,7 +36,7 @@ function pull_image() {
 function build_image() {
   builder_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_JOB_ID}"
   cmd="docker buildx bake -f $config --progress plain \
-  --builder $builder_name \
+  --builder $builder_name $extra_flags \
   --set=${service}.cache-to=type=local,dest=${local_cache_dir},mode=max"
 
   if [[ -e $remote_cache ]]; then
@@ -74,6 +74,13 @@ config="$(plugin_read_config CONFIG)"
 if [[ -z $config ]]; then
   config="docker-compose.yml"
 fi
+
+extra_flags=""
+platform="$(plugin_read_config PLATFORM)"
+if [[ -n $platform ]]; then
+  extra_flags="--platform $platform"
+fi
+
 cache_from="$(plugin_read_config CACHE_FROM)"
 if [[ -z $cache_from ]]; then
   cache_from="${BUILDKITE_PIPELINE_SLUG}/latest"
